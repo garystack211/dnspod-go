@@ -16,7 +16,7 @@ const (
 
 // Record is the DNS record representation.
 type Record struct {
-	ID            string `json:"id,omitempty"`
+	ID            json.Number `json:"id,omitempty"`
 	Name          string `json:"name,omitempty"`
 	Line          string `json:"line,omitempty"`
 	LineID        string `json:"line_id,omitempty"`
