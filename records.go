@@ -12,6 +12,7 @@ const (
 	methodRecordInfo   = "Record.Info"
 	methodRecordRemove = "Record.Remove"
 	methodRecordModify = "Record.Modify"
+	methodRecordLines = "Record.Line"
 )
 
 // Record is the DNS record representation.
@@ -52,6 +53,12 @@ type recordWrapper struct {
 	Info   DomainInfo `json:"info"`
 	Record Record     `json:"record"`
 }
+
+type recordLineWrapper struct {
+	Status Status    		 `json:"status"`
+	Info   map[string]string `json:"line_ids"`
+}
+
 
 type recordModifyWrapper struct {
 	Status Status       `json:"status"`
@@ -259,3 +266,29 @@ func (s *RecordsService) Delete(domain, recordID string) (*Response, error) {
 
 	return res, nil
 }
+
+// 获取线路
+func (s *RecordsService) Lines() (map[string]string, error) {
+	m := make(map[string]string)
+	payload := s.client.CommonParams.toPayLoad()
+	payload.Add("domain_grade", "DP_Ultra")
+	returnedRecordLine := recordLineWrapper{}
+
+	_, err := s.client.post(methodRecordLines, payload, &returnedRecordLine)
+	if err != nil {
+		return m, err
+	}
+
+	if returnedRecordLine.Status.Code != "1" {
+		return nil, fmt.Errorf("获取线路异常:%s", returnedRecordLine.Status.Message)
+	}
+	m = returnedRecordLine.Info
+	//err =json.Unmarshal([]byte(returnedRecordLine.Info),&m)
+	//if err != nil{
+	//	return nil, fmt.Errorf("线路结果序列化异常: %s", err)
+	//}
+	return m, nil
+}
+
+
+
