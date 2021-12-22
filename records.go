@@ -55,8 +55,8 @@ type recordWrapper struct {
 }
 
 type recordLineWrapper struct {
-	Status Status    		 `json:"status"`
-	Info   map[string]string `json:"line_ids"`
+	Status Status    				 `json:"status"`
+	LineIDS   map[string]interface{} `json:"line_ids"`
 }
 
 
@@ -90,6 +90,7 @@ func (s *RecordsService) List(domainID, recordName string) ([]Record, *Response,
 
 	res, err := s.client.post(methodRecordList, payload, &wrappedRecords)
 	if err != nil {
+
 		return nil, res, err
 	}
 
@@ -268,27 +269,25 @@ func (s *RecordsService) Delete(domain, recordID string) (*Response, error) {
 }
 
 // 获取线路
-func (s *RecordsService) Lines() (map[string]string, error) {
+func (s *RecordsService) Lines(name string) (map[string]string, error) {
 	m := make(map[string]string)
 	payload := s.client.CommonParams.toPayLoad()
-	payload.Add("domain_grade", "DP_Ultra")
+	payload.Add("domain_grade", name)
 	returnedRecordLine := recordLineWrapper{}
 
 	_, err := s.client.post(methodRecordLines, payload, &returnedRecordLine)
 	if err != nil {
+		fmt.Printf("异常:%s\n",err)
 		return m, err
 	}
 
 	if returnedRecordLine.Status.Code != "1" {
 		return nil, fmt.Errorf("获取线路异常:%s", returnedRecordLine.Status.Message)
 	}
-	m = returnedRecordLine.Info
-	//err =json.Unmarshal([]byte(returnedRecordLine.Info),&m)
-	//if err != nil{
-	//	return nil, fmt.Errorf("线路结果序列化异常: %s", err)
-	//}
+
+	for k,v :=range returnedRecordLine.LineIDS{
+		m[k] = fmt.Sprintf("%v",v)
+	}
+
 	return m, nil
 }
-
-
-
