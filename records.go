@@ -12,7 +12,6 @@ const (
 	methodRecordInfo   = "Record.Info"
 	methodRecordRemove = "Record.Remove"
 	methodRecordModify = "Record.Modify"
-	methodRecordLines = "Record.Line"
 )
 
 // Record is the DNS record representation.
@@ -54,12 +53,6 @@ type recordWrapper struct {
 	Record Record     `json:"record"`
 }
 
-type recordLineWrapper struct {
-	Status Status    				 `json:"status"`
-	LineIDS   map[string]interface{} `json:"line_ids"`
-}
-
-
 type recordModifyWrapper struct {
 	Status Status       `json:"status"`
 	Record RecordModify `json:"record"`
@@ -82,6 +75,7 @@ type RecordsService struct {
 func (s *RecordsService) List(domainID, recordName string) ([]Record, *Response, error) {
 	payload := s.client.CommonParams.toPayLoad()
 	payload.Add("domain_id", domainID)
+	payload.Add("length","1000")
 	if recordName != "" {
 		payload.Add("sub_domain", recordName)
 	}
@@ -90,7 +84,6 @@ func (s *RecordsService) List(domainID, recordName string) ([]Record, *Response,
 
 	res, err := s.client.post(methodRecordList, payload, &wrappedRecords)
 	if err != nil {
-
 		return nil, res, err
 	}
 
@@ -266,28 +259,4 @@ func (s *RecordsService) Delete(domain, recordID string) (*Response, error) {
 	}
 
 	return res, nil
-}
-
-// 获取线路
-func (s *RecordsService) Lines(name string) (map[string]string, error) {
-	m := make(map[string]string)
-	payload := s.client.CommonParams.toPayLoad()
-	payload.Add("domain_grade", name)
-	returnedRecordLine := recordLineWrapper{}
-
-	_, err := s.client.post(methodRecordLines, payload, &returnedRecordLine)
-	if err != nil {
-		fmt.Printf("异常:%s\n",err)
-		return m, err
-	}
-
-	if returnedRecordLine.Status.Code != "1" {
-		return nil, fmt.Errorf("获取线路异常:%s", returnedRecordLine.Status.Message)
-	}
-
-	for k,v :=range returnedRecordLine.LineIDS{
-		m[k] = fmt.Sprintf("%v",v)
-	}
-
-	return m, nil
 }

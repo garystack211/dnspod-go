@@ -12,7 +12,7 @@ func setupClient() (*Client, *http.ServeMux, func()) {
 
 	params := CommonParams{LoginToken: "DNSPod login token"}
 
-	client := NewClient(params)
+	client := NewClient(params,"CN")
 	client.BaseURL = server.URL + "/"
 
 	return client, mux, func() {

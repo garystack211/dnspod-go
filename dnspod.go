@@ -15,8 +15,10 @@ import (
 )
 
 const (
-	libraryVersion   = "0.4"
+	libraryVersion   = "0.5"
 	defaultBaseURL   = "https://dnsapi.cn/"
+	GlobalBaseURL   = "https://dnsapi.com/"
+
 	defaultUserAgent = "dnspod-go/" + libraryVersion
 
 	defaultTimeout   = 5
@@ -92,7 +94,7 @@ type Client struct {
 }
 
 // NewClient returns a new DNSPod API client.
-func NewClient(params CommonParams) *Client {
+func NewClient(params CommonParams,area string) *Client {
 	timeout := defaultTimeout
 	if params.Timeout != 0 {
 		timeout = params.Timeout
@@ -112,7 +114,12 @@ func NewClient(params CommonParams) *Client {
 		},
 	}
 
-	client := &Client{HTTPClient: &httpClient, CommonParams: params, BaseURL: defaultBaseURL, UserAgent: defaultUserAgent}
+	api := defaultBaseURL
+	if area != "CN" {
+		api = GlobalBaseURL
+	}
+
+	client := &Client{HTTPClient: &httpClient, CommonParams: params, BaseURL: api, UserAgent: defaultUserAgent}
 
 	client.common.client = client
 	client.Domains = (*DomainsService)(&client.common)
